@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLIPZY - Duniya</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font-family:sans-serif}
+header{position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.8);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;z-index:100;border-bottom:1px solid #222}
+.logo{font-weight:900;font-size:22px;letter-spacing:2px}.logo span{color:#ff0050}
+.btn-upload{background:#ff0050;color:#fff;border:none;padding:8px 16px;border-radius:20px;font-weight:bold;cursor:pointer}
+.feed{padding-top:60px;max-width:400px;margin:0 auto}
+.video-card{position:relative;height:92vh;border-bottom:1px solid #222;background:#111;display:flex;flex-direction:column;justify-content:flex-end}
+video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+.overlay{position:relative;z-index:2;padding:16px;background:linear-gradient(transparent, rgba(0,0,0,0.8))}
+.actions{position:absolute;right:12px;bottom:100px;z-index:3;display:flex;flex-direction:column;gap:20px}
+.action-btn{background:rgba(255,255,255,0.15);border:none;width:48px;height:48px;border-radius:50%;color:#fff;font-size:22px;cursor:pointer}
+.upload-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;align-items:center;justify-content:center;padding:20px}
+.upload-box{background:#1a1a1a;padding:20px;border-radius:16px;width:100%;max-width:400px}
+input,textarea{width:100%;padding:12px;margin:8px 0;background:#222;border:1px solid #333;color:#fff;border-radius:8px}
+.progress{height:4px;background:#333;border-radius:2px;margin:10px 0;overflow:hidden}
+.progress-bar{height:100%;background:#ff0050;width:0%}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">CLIP<span>ZY</span></div>
+<button class="btn-upload" onclick="openUpload()">+ Upload</button>
+</header>
+<div class="feed" id="feed"><div style="padding:100px 20px;text-align:center;color:#666">Ana loda... CLIPZY</div></div>
+<div class="upload-modal" id="uploadModal">
+<div class="upload-box">
+<h3>Saka Sabon Clip</h3>
+<input type="file" id="videoFile" accept="video/*">
+<input type="text" id="caption" placeholder="Caption...">
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+<p id="status" style="font-size:12px;color:#aaa"></p>
+<button class="btn-upload" style="width:100%;margin-top:10px" onclick="uploadVideo()">Upload</button>
+<button onclick="closeUpload()" style="width:100%;margin-top:8px;background:#222;color:#fff;border:none;padding:10px;border-radius:20px">Rufe</button>
+</div>
+</div>
+<script>
+const SUPABASE_URL='https://gukuzlvwqaripnufvmlt.supabase.co';
+const SUPABASE_ANON='sb_publishable_x2ndSpPkpMsb3ajyBYBVrw_2y8K-84l';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+let freeCount=parseInt(localStorage.getItem('clipzy_free')||'0');
+async function loadVideos(){
+const {data,error}=await supabaseClient.from('videos').select('*').order('created_at',{ascending:false}).limit(20);
+if(error||!data||data.length===0){document.getElementById('feed').innerHTML='<div style="padding:100px 20px;text-align:center">Babu video. Danna + Upload!</div>';return;}
+const feed=document.getElementById('feed');feed.innerHTML='';
+data.forEach(v=>{
+const card=document.createElement('div');card.className='video-card';
+card.innerHTML=`<video src="${v.video_url}" loop muted playsinline onclick="this.paused?this.play():this.pause()"></video><div class="actions"><button class="action-btn" onclick="likeVideo('${v.id}')">❤️</button><button class="action-btn">💬</button></div><div class="overlay"><div style="font-weight:bold">@${v.username||'clipzy'}</div><div style="font-size:14px">${v.caption||''}</div><div style="font-size:12px;color:#aaa">${v.likes||0} likes</div></div>`;
+feed.appendChild(card);
+});
+const fv=feed.querySelector('video');if(fv)fv.play().catch(()=>{});
+}
+function openUpload(){document.getElementById('uploadModal').style.display='flex';}
+function closeUpload(){document.getElementById('uploadModal').style.display='none';}
+async function uploadVideo(){
+const file=document.getElementById('videoFile').files[0];const cap=document.getElementById('caption').value;
+if(!file){alert('Zabi video');return;}
+if(freeCount>=3){if(!confirm('Ka gama 3 kyauta! Yanzu N200. Ci gaba?'))return;}
+const status=document.getElementById('status');const bar=document.getElementById('progressBar');
+status.textContent='Ana uploading...';bar.style.width='20%';
+const fileName=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9.]/g,'_');
+const {error:ue}=await supabaseClient.storage.from('videos').upload(fileName,file);
+if(ue){status.textContent=ue.message;alert(ue.message);return;}
+bar.style.width='70%';
+const {data:urlData}=supabaseClient.storage.from('videos').getPublicUrl(fileName);
+const {error:dbE}=await supabaseClient.from('videos').insert([{video_url:urlData.publicUrl,caption:cap,username:'aliyu',likes:0}]);
+if(dbE){status.textContent=dbE.message;return;}
+bar.style.width='100%';status.textContent='An gama!';freeCount++;localStorage.setItem('clipzy_free',freeCount);
+setTimeout(()=>{closeUpload();loadVideos();bar.style.width='0%';status.textContent='';},1000);
+}
+async function likeVideo(id){const {data}=await supabaseClient.from('videos').select('likes').eq('id',id).single();if(data){await supabaseClient.from('videos').update({likes:(data.likes||0)+1}).eq('id',id);loadVideos();}}
+loadVideos();
+</script>
+</body>
+</html>
