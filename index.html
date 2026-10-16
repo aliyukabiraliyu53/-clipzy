@@ -1,81 +1,139 @@
 <!DOCTYPE html>
-<html lang="ha">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CLIPZY - Duniya</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>CLIPZY</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font-family:sans-serif}
-header{position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.8);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;z-index:100;border-bottom:1px solid #222}
-.logo{font-weight:900;font-size:22px;letter-spacing:2px}.logo span{color:#ff0050}
-.btn-upload{background:#ff0050;color:#fff;border:none;padding:8px 16px;border-radius:20px;font-weight:bold;cursor:pointer}
-.feed{padding-top:60px;max-width:400px;margin:0 auto}
-.video-card{position:relative;height:92vh;border-bottom:1px solid #222;background:#111;display:flex;flex-direction:column;justify-content:flex-end}
-video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
-.overlay{position:relative;z-index:2;padding:16px;background:linear-gradient(transparent, rgba(0,0,0,0.8))}
-.actions{position:absolute;right:12px;bottom:100px;z-index:3;display:flex;flex-direction:column;gap:20px}
-.action-btn{background:rgba(255,255,255,0.15);border:none;width:48px;height:48px;border-radius:50%;color:#fff;font-size:22px;cursor:pointer}
-.upload-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;align-items:center;justify-content:center;padding:20px}
-.upload-box{background:#1a1a1a;padding:20px;border-radius:16px;width:100%;max-width:400px}
-input,textarea{width:100%;padding:12px;margin:8px 0;background:#222;border:1px solid #333;color:#fff;border-radius:8px}
-.progress{height:4px;background:#333;border-radius:2px;margin:10px 0;overflow:hidden}
-.progress-bar{height:100%;background:#ff0050;width:0%}
+*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#fff;font-family:Arial;overflow:hidden}
+#header{position:fixed;top:0;left:0;right:0;height:50px;background:#000;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid #222}
+#logo{font-weight:900;font-size:22px;letter-spacing:1px}
+#headerRight{display:flex;gap:12px;align-items:center}
+.iconBtn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+#uploadBtn{background:#ff2d55;color:#fff;border:none;padding:6px 14px;border-radius:20px;font-weight:700;cursor:pointer}
+#tabs{position:fixed;top:50px;left:0;right:0;height:36px;background:#000;z-index:99;display:flex;justify-content:center;gap:28px;border-bottom:1px solid #111}
+.tab{color:#888;font-weight:700;padding:8px 0;cursor:pointer;font-size:14px}.tab.active{color:#fff;border-bottom:2px solid #fff}
+#feed{position:absolute;top:86px;bottom:0;left:0;right:0;overflow-y:scroll;scroll-snap-type:y mandatory}
+.videoBox{height:100%;scroll-snap-align:start;position:relative;background:#111;display:flex;align-items:center;justify-content:center}
+video{height:100%;width:100%;object-fit:cover}
+.side{position:absolute;right:10px;bottom:90px;display:flex;flex-direction:column;gap:18px;align-items:center;z-index:10}
+.sBtn{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;background:none;border:none;color:#fff}
+.sBtn span{font-size:12px}
+.avatar{width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:#333;display:flex;align-items:center;justify-content:center;font-weight:700}
+.bottomInfo{position:absolute;left:12px;bottom:20px;z-index:10;max-width:70%}
+.bottomInfo b{font-size:15px}.bottomInfo p{font-size:13px;margin-top:4px;color:#eee}
+#uploadModal{position:fixed;inset:0;background:#000;z-index:200;display:none;padding:20px}
+input,textarea{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none;background:#1a1a1a;color:#fff}
+#inbox{position:fixed;inset:0;background:#000;z-index:200;display:none}
+.msg{padding:10px;border-bottom:1px solid #111}
 </style>
 </head>
 <body>
-<header>
-<div class="logo">CLIP<span>ZY</span></div>
-<button class="btn-upload" onclick="openUpload()">+ Upload</button>
-</header>
-<div class="feed" id="feed"><div style="padding:100px 20px;text-align:center;color:#666">Ana loda... CLIPZY</div></div>
-<div class="upload-modal" id="uploadModal">
-<div class="upload-box">
-<h3>Saka Sabon Clip</h3>
-<input type="file" id="videoFile" accept="video/*">
-<input type="text" id="caption" placeholder="Caption...">
-<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-<p id="status" style="font-size:12px;color:#aaa"></p>
-<button class="btn-upload" style="width:100%;margin-top:10px" onclick="uploadVideo()">Upload</button>
-<button onclick="closeUpload()" style="width:100%;margin-top:8px;background:#222;color:#fff;border:none;padding:10px;border-radius:20px">Rufe</button>
+<div id="header"><div id="logo">CLIPZY</div><div id="headerRight"><button class="iconBtn" onclick="openInbox()">💬 Inbox</button><button class="iconBtn">🌐 EN</button><button id="uploadBtn" onclick="openUp()">+ Upload</button></div></div>
+<div id="tabs"><div class="tab active" onclick="setTab(this,'foryou')">For You</div><div class="tab" onclick="setTab(this,'following')">Following</div><div class="tab" onclick="setTab(this,'friends')">Friends</div></div>
+<div id="feed"></div>
+
+<div id="uploadModal">
+<h2>Upload Video</h2>
+<input type="file" id="vFile" accept="video/*">
+<input id="vUser" placeholder="Username e.g aliyu">
+<textarea id="vCap" placeholder="Caption..."></textarea>
+<button onclick="doUpload()" id="upBtn" style="width:100%;padding:14px;background:#ff2d55;border:none;border-radius:10px;color:#fff;font-weight:700;margin-top:10px">Upload</button>
+<button onclick="closeUp()" style="width:100%;padding:12px;background:#222;border:none;border-radius:10px;color:#fff;margin-top:8px">Cancel</button>
+<p id="upStatus" style="margin-top:10px;text-align:center"></p>
 </div>
-</div>
+
+<div id="inbox"><div style="padding:12px;display:flex;justify-content:space-between;border-bottom:1px solid #222"><b>Messages</b><button onclick="closeInbox()" style="background:none;border:none;color:#fff;font-size:20px">✕</button></div><div id="msgList"></div><div style="position:absolute;bottom:0;left:0;right:0;display:flex;padding:10px;gap:8px;background:#000"><input id="msgTo" placeholder="To username"><input id="msgText" placeholder="Message"><button onclick="sendMsg()" style="padding:10px 16px;background:#ff2d55;border:none;border-radius:20px;color:#fff">Send</button></div></div>
+
 <script>
-const SUPABASE_URL='https://gukuzlvwqaripnufvmlt.supabase.co';
-const SUPABASE_ANON='sb_publishable_x2ndSpPkpMsb3ajyBYBVrw_2y8K-84l';
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
-let freeCount=parseInt(localStorage.getItem('clipzy_free')||'0');
+const SUPA_URL='https://gukuzlvwqaripnufvmlt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1a3V6bHZ3cWFyaXBudWZ2bWx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNzA4NjcsImV4cCI6MjA3MzY0Njg2N30.Yte4_Wx-2ctdST9andi7p1ljq2S8yTgI1W1-kCFV-aro';
+const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentTab='foryou'; let myUser=localStorage.getItem('clipzy_user')||'';
+let videos=[];
+
 async function loadVideos(){
-const {data,error}=await supabaseClient.from('videos').select('*').order('created_at',{ascending:false}).limit(20);
-if(error||!data||data.length===0){document.getElementById('feed').innerHTML='<div style="padding:100px 20px;text-align:center">Babu video. Danna + Upload!</div>';return;}
-const feed=document.getElementById('feed');feed.innerHTML='';
-data.forEach(v=>{
-const card=document.createElement('div');card.className='video-card';
-card.innerHTML=`<video src="${v.video_url}" loop muted playsinline onclick="this.paused?this.play():this.pause()"></video><div class="actions"><button class="action-btn" onclick="likeVideo('${v.id}')">❤️</button><button class="action-btn">💬</button></div><div class="overlay"><div style="font-weight:bold">@${v.username||'clipzy'}</div><div style="font-size:14px">${v.caption||''}</div><div style="font-size:12px;color:#aaa">${v.likes||0} likes</div></div>`;
-feed.appendChild(card);
-});
-const fv=feed.querySelector('video');if(fv)fv.play().catch(()=>{});
+ const {data,error}=await supa.from('videos').select('*').order('created_at',{ascending:false});
+ if(error){document.getElementById('feed').innerHTML='<p style=text-align:center;margin-top:100px>Error loading</p>';return}
+ videos=data||[]; renderFeed();
 }
-function openUpload(){document.getElementById('uploadModal').style.display='flex';}
-function closeUpload(){document.getElementById('uploadModal').style.display='none';}
-async function uploadVideo(){
-const file=document.getElementById('videoFile').files[0];const cap=document.getElementById('caption').value;
-if(!file){alert('Zabi video');return;}
-if(freeCount>=3){if(!confirm('Ka gama 3 kyauta! Yanzu N200. Ci gaba?'))return;}
-const status=document.getElementById('status');const bar=document.getElementById('progressBar');
-status.textContent='Ana uploading...';bar.style.width='20%';
-const fileName=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9.]/g,'_');
-const {error:ue}=await supabaseClient.storage.from('videos').upload(fileName,file);
-if(ue){status.textContent=ue.message;alert(ue.message);return;}
-bar.style.width='70%';
-const {data:urlData}=supabaseClient.storage.from('videos').getPublicUrl(fileName);
-const {error:dbE}=await supabaseClient.from('videos').insert([{video_url:urlData.publicUrl,caption:cap,username:'aliyu',likes:0}]);
-if(dbE){status.textContent=dbE.message;return;}
-bar.style.width='100%';status.textContent='An gama!';freeCount++;localStorage.setItem('clipzy_free',freeCount);
-setTimeout(()=>{closeUpload();loadVideos();bar.style.width='0%';status.textContent='';},1000);
+function renderFeed(){
+ let html=''; if(videos.length==0){html='<div style="text-align:center;margin-top:150px;color:#888"><h2>No videos yet</h2><p>Be first to upload!</p></div>'}
+ videos.forEach(v=>{
+  html+=`<div class="videoBox"><video src="${v.video_url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>
+  <div class="side">
+   <button class="sBtn" onclick="like('${v.id}')"><div style="font-size:28px">❤️</div><span id="like-${v.id}">${v.likes||0}</span></button>
+   <button class="sBtn" onclick="commentPrompt('${v.id}')"><div style="font-size:26px">💬</div><span>Comment</span></button>
+   <button class="sBtn" onclick="shareVid('${v.video_url}')"><div style="font-size:26px">🔗</div><span>Share</span></button>
+   <button class="sBtn" onclick="openProfile('${v.username}')"><div class="avatar">${(v.username||'U')[0].toUpperCase()}</div><span>@${v.username}</span></button>
+   <button class="sBtn" onclick="follow('${v.username}')"><div style="background:#ff2d55;padding:4px 10px;border-radius:12px;font-size:12px">Follow</div></button>
+  </div>
+  <div class="bottomInfo"><b>@${v.username}</b><p>${v.caption||''}</p></div></div>`;
+ });
+ document.getElementById('feed').innerHTML=html;
 }
-async function likeVideo(id){const {data}=await supabaseClient.from('videos').select('likes').eq('id',id).single();if(data){await supabaseClient.from('videos').update({likes:(data.likes||0)+1}).eq('id',id);loadVideos();}}
+async function like(id){
+ const v=videos.find(x=>x.id===id); const newLikes=(v.likes||0)+1;
+ await supa.from('videos').update({likes:newLikes}).eq('id',id); document.getElementById('like-'+id).innerText=newLikes; v.likes=newLikes;
+}
+function commentPrompt(id){ const c=prompt('Write comment:'); if(c){ addComment(id,c)}}
+async function addComment(vid,txt){
+ const u=prompt('Your username?')||myUser||'guest'; myUser=u; localStorage.setItem('clipzy_user',u);
+ await supa.from('comments').insert({video_id:vid,username:u,comment:txt}); alert('Comment added!');
+}
+function shareVid(url){ navigator.clipboard.writeText(url); alert('Link copied! 🔗'); }
+async function follow(name){
+ const u=prompt('Your username?')||myUser; if(!u)return; myUser=u; localStorage.setItem('clipzy_user',u);
+ if(u===name){alert('Cannot follow yourself');return}
+ const {error}=await supa.from('follows').insert({follower:u,following:name});
+ if(error){alert('Already following or error');} else {alert('Following @'+name+'! Check Friends tab if they follow back 💚');}
+ const {data}=await supa.from('follows').select('*').eq('follower',name).eq('following',u);
+ if(data&&data.length>0){alert('You are now Friends with @'+name+'! 💚 You can DM each other');}
+}
+function openProfile(u){ alert('Profile: @'+u+'\nVideos: '+(videos.filter(v=>v.username===u).length));}
+function setTab(el,t){ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); currentTab=t; if(t==='friends') loadFriends(); else if(t==='following') loadFollowing(); else loadVideos(); }
+async function loadFollowing(){
+ const u=myUser||prompt('Your username to see following:'); if(!u)return; myUser=u; localStorage.setItem('clipzy_user',u);
+ const {data:f}=await supa.from('follows').select('following').eq('follower',u); const names=(f||[]).map(x=>x.following);
+ if(names.length===0){document.getElementById('feed').innerHTML='<div style="text-align:center;margin-top:150px">Not following anyone yet</div>';return}
+ const {data}=await supa.from('videos').select('*').in('username',names).order('created_at',{ascending:false}); videos=data||[]; renderFeed();
+}
+async function loadFriends(){
+ const u=myUser||prompt('Your username:'); if(!u)return; myUser=u; localStorage.setItem('clipzy_user',u);
+ const {data:f1}=await supa.from('follows').select('following').eq('follower',u); const {data:f2}=await supa.from('follows').select('follower').eq('following',u);
+ const following=(f1||[]).map(x=>x.following); const followers=(f2||[]).map(x=>x.follower); const friends=following.filter(x=>followers.includes(x));
+ if(friends.length===0){document.getElementById('feed').innerHTML='<div style="text-align:center;margin-top:150px">No friends yet<br>Follow each other to be Friends 💚</div>';return}
+ const {data}=await supa.from('videos').select('*').in('username',friends).order('created_at',{ascending:false}); videos=data||[]; renderFeed();
+}
+function openUp(){ document.getElementById('uploadModal').style.display='block';}
+function closeUp(){ document.getElementById('uploadModal').style.display='none';}
+async function doUpload(){
+ const file=document.getElementById('vFile').files[0]; const user=document.getElementById('vUser').value; const cap=document.getElementById('vCap').value;
+ if(!file||!user){alert('Select video and username');return}
+ document.getElementById('upBtn').innerText='Uploading...'; document.getElementById('upStatus').innerText='Uploading to Supabase...';
+ myUser=user; localStorage.setItem('clipzy_user',user);
+ const fileName=Date.now()+'_'+file.name;
+ const {error:upErr}=await supa.storage.from('videos').upload(fileName,file);
+ if(upErr){document.getElementById('upStatus').innerText='Upload error: '+upErr.message; document.getElementById('upBtn').innerText='Upload';return}
+ const {data:{publicUrl}}=supa.storage.from('videos').getPublicUrl(fileName);
+ const {error:dbErr}=await supa.from('videos').insert({video_url:publicUrl,username:user,caption:cap,likes:0});
+ if(dbErr){document.getElementById('upStatus').innerText='DB error: '+dbErr.message}
+ else {document.getElementById('upStatus').innerText='Success! ✅'; setTimeout(()=>{closeUp();loadVideos();},1000)}
+ document.getElementById('upBtn').innerText='Upload';
+}
+function openInbox(){ document.getElementById('inbox').style.display='block'; loadMsgs(); }
+function closeInbox(){ document.getElementById('inbox').style.display='none'; }
+async function loadMsgs(){
+ const u=myUser||prompt('Your username:'); if(!u)return; myUser=u; localStorage.setItem('clipzy_user',u);
+ const {data}=await supa.from('messages').select('*').or(`sender.eq.${u},receiver.eq.${u}`).order('created_at',{ascending:false}).limit(30);
+ let h=''; (data||[]).forEach(m=>{h+=`<div class=msg><b>${m.sender} → ${m.receiver}:</b> ${m.message}</div>`}); document.getElementById('msgList').innerHTML=h||'<p style=text-align:center;margin-top:20px>No messages</p>';
+}
+async function sendMsg(){
+ const to=document.getElementById('msgTo').value; const txt=document.getElementById('msgText').value; const from=myUser||prompt('Your username:'); if(!from||!to||!txt)return; myUser=from; localStorage.setItem('clipzy_user',from);
+ const {data:f1}=await supa.from('follows').select('*').eq('follower',from).eq('following',to); const {data:f2}=await supa.from('follows').select('*').eq('follower',to).eq('following',from);
+ if(!f1.length||!f2.length){alert('You can only DM Friends! Follow each other first 💚');return}
+ await supa.from('messages').insert({sender:from,receiver:to,message:txt}); document.getElementById('msgText').value=''; loadMsgs();
+}
 loadVideos();
 </script>
 </body>
