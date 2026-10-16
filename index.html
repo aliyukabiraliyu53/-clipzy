@@ -1,4 +1,50 @@
-[10/16, 21:26] aliyu kabir aliyu: <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clipzy - Pro</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui;background:#0f0f0f;color:#fff;padding:20px}.container{max-width:600px;margin:0 auto}.header{text-align:center;padding:20px 0}h1{color:#00ff88;font-size:32px}select{padding:12px;border-radius:10px;background:#222;color:#fff;border:none;flex:1}.controls{display:flex;gap:10px;margin:20px 0;flex-wrap:wrap}.upload{border:2px dashed #00ff88;border-radius:16px;padding:40px;text-align:center;background:#1a1a1a;cursor:pointer}#f{display:none}.prog{display:none;margin:20px 0;background:#222;border-radius:10px;overflow:hidden}.bar{height:30px;background:#00ff88;width:0%;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold}.info{background:#1a1a1a;padding:15px;border-radius:10px;margin:15px 0;font-size:13px}.legal{border-left:4px solid #00ff88;background:#1e1e1e;padding:15px;border-radius:8px;margin:20px 0;font-size:12px}video{width:100%;border-radius:12px;display:none;margin:15px 0}a.btn{display:none;text-align:center;padding:15px;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;text-decoration:none}</style></head><body><div class="container"><div class="header"><h1>Clipzy ✂️</h1><p>100MB → 15MB - Fast & Private</p></div><div class="controls"><select id="L" onchange="document.documentElement.lang=this.value"><option value="en">English</option><option value="ha">Hausa</option><option value="pidgin">Pidgin</option><option value="fr">Français</option><option value="ar">العربية</option></select><select id="C" onchange="setC(this.value)"><option value="NG">🇳🇬 Nigeria</option
-[10/16, 21:27] aliyu kabir aliyu: <option value="CM">🇨🇲 Cameroon
-[10/16, 21:27] aliyu kabir aliyu: </option><option value="US">🇺🇸 USA</option><option value="GB">🇬🇧 UK</option><option value="SA">🇸🇦 Saudi</option><option value="FR">🇫🇷 France</option></select></div><div class="upload" id="D" onclick="document.getElementById('f').click()">📁<br><b>Tap to select video (Max 100MB)</b></div><input type="file" id="f" accept="video/*"><div class="prog" id="P"><div class="bar" id="B">0%</div></div><div class="info" id="I" style="display:none"></div><video id="V" controls></video><a id="DL" class="btn">⬇️ Download Compressed</a><div class="legal"><b id="LT">Legal - Nigeria</b><p id="LX">NDPA 2023. Local processing. No illegal content.</p></div></div><script>const LD={NG:["Legal - Nigeria","NDPA 2023. Local processing only."],NE:["Juridique - Niger","Loi cybercriminalité. Local."],GH:["Legal - Ghana","Data Protection Act 2012. Local."],CM:["Juridique - Cameroun","Loi 2010/012. Local."],US:["Legal - USA","DMCA. Local processing."],GB:["Legal - UK","GDPR. Local."],SA:["قانوني - السعودية","نظام حماية. محلي."],FR:["Juridique - France","RGPD. Local."]};function setC(c){LT.innerText=LD[c][0];LX.innerText=LD[c][1]}const D=document.getElementById('D'),f=document.getElementById('f'),P=document.getElementById('P'),B=document.getElementById('B'),I=document.getElementById('I'),V=document.getElementById('V'),DL=document.getElementById('DL');D.addEventListener('dragover',e=>e.preventDefault());D.addEventListener('drop',e=>{e.preventDefault();h(e.dataTransfer.files[0])});f.addEventListener('change',e=>h(e.target.files[0]));async function h(file){if(!file)return;if(file.size>104857600){alert('Max 100MB');return}I.style.display='block';I.innerHTML=file.name+' - '+(file.size/1024/1024).toFixed(2)+'MB → 15MB';P.style.display='block';try{const c=await comp(file);B.style.width='100%';B.innerText='100% Done!';const u=URL.createObjectURL(c);V.src=u;V.style.display='block';DL.href=u;DL.download='clipzy_'+file.name;DL.style.display='block';I.innerHTML+='<br>✓ '+(c.size/1024/1024).toFixed(2)+'MB Saved '+Math.round(100-c.size/file.size*100)+'%'}catch(e){I.innerHTML+='<br>Error:'+e.message}}async function comp(file){return new Promise((res,rej)=>{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.src=URL.createObjectURL(file);v.onloadedmetadata=async()=>{const can=document.createElement('canvas'),x=can.getContext('2d');can.width=640;can.height=v.videoHeight*640/v.videoWidth;const s=can.captureStream(24),ch=[],r=new MediaRecorder(s,{mimeType:'video/webm;codecs=vp9',videoBitsPerSecond:8e5});r.ondataavailable=e=>{if(e.data.size>0)ch.push(e.data)};r.onstop=()=>res(new Blob(ch,{type:'video/webm'}));v.onplay=()=>{(function d(){if(v.ended){r.stop();return}x.drawImage(v,0,0,can.width,can.height);const p=Math.round(v.currentTime/v.duration*90);B.style.width=p+'%';B.innerText=p+'%';requestAnimationFrame(d)})()};r.start();await v.play()};v.onerror=()=>rej(new Error('load fail'))})}</script></body></html>
-[10/16, 21:29] aliyu kabir aliyu: <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clipzy - Pro Video Compressor</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui;background:#0f0f0f;color:#fff;padding:20px}.container{max-width:600px;margin:0 auto}.header{text-align:center;padding:20px 0}h1{color:#00ff88;font-size:32px}select{padding:12px;border-radius:10px;background:#222;color:#fff;border:none;flex:1}.controls{display:flex;gap:10px;margin:20px 0;flex-wrap:wrap}.upload{border:2px dashed #00ff88;border-radius:16px;padding:40px;text-align:center;background:#1a1a1a;cursor:pointer}#f{display:none}.prog{display:none;margin:20px 0;background:#222;border-radius:10px;overflow:hidden}.bar{height:30px;background:#00ff88;width:0%;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold}.info{background:#1a1a1a;padding:15px;border-radius:10px;margin:15px 0;font-size:13px}.legal{border-left:4px solid #00ff88;background:#1e1e1e;padding:15px;border-radius:8px;margin:20px 0;font-size:12px}video{width:100%;border-radius:12px;display:none;margin:15px 0}a.btn{display:none;text-align:center;padding:15px;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;text-decoration:none}</style></head><body><div class="container"><div class="header"><h1>Clipzy ✂️</h1><p>100MB → 15MB - Fast & Private</p></div><div class="controls"><select id="L"><option value="en">English</option><option value="ha">Hausa</option><option value="pidgin">Pidgin</option><option value="fr">Français</option><option value="ar">العربية</option></select><select id="C" onchange="setC(this.value)"><option value="NG">🇳🇬 Nigeria</option><option value="NE">🇳🇪 Niger</option><option value="GH">🇬🇭 Ghana</option><option value="CM">🇨🇲 Cameroon</option><option value="US">🇺🇸 USA</option><option value="GB">🇬🇧 UK</option><option value="SA">🇸🇦 Saudi</option><option value="FR">🇫🇷 France</option></select></div><div class="upload" id="D" onclick="document.getElementById('f').click()">📁<br><b>Tap to select video (Max 100MB)</b></div><input type="file" id="f" accept="video/*"><div class="prog" id="P"><div class="bar" id="B
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clipzy - TikTok Clone</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-black text-white">
+<div class="h-screen flex flex-col max-w-[500px] mx-auto">
+<header class="p-4 flex justify-between items-center border-b border-zinc-800">
+<h1 class="font-bold text-xl">Clipzy 🔥</h1>
+<label class="bg-white text-black px-4 py-2 rounded-full font-bold cursor-pointer">+ Upload<input id="fileInput" type="file" accept="video/*" hidden></label>
+</header>
+<div id="feed" class="flex-1 overflow-y-scroll snap-y snap-mandatory bg-black"><div class="h-full flex items-center justify-center text-zinc-500">Loading...</div></div>
+</div>
+<script>
+const SUPABASE_URL='https://gukuzlvwqaripnufvmlt.supabase.co';
+const SUPABASE_KEY='sb_publishable_x2ndSpPkpMsb3ajyBYBVrw_2y8K-84l';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+async function loadVideos(){
+const {data,error}=await supabaseClient.from('videos').select('*').order('created_at',{ascending:false});
+const feed=document.getElementById('feed');
+if(error){feed.innerHTML='Error: '+error.message;return;}
+if(!data||data.length==0){feed.innerHTML='<div class="h-full flex items-center justify-center">No videos yet - Be first to upload!</div>';return;}
+feed.innerHTML='';
+data.forEach(v=>{
+const div=document.createElement('div');
+div.className='h-[calc(100vh-64px)] w-full snap-start relative flex items-center justify-center bg-black';
+div.innerHTML=`<video src="${v.url}" class="h-full w-full object-contain" loop playsinline onclick="this.paused?this.play():this.pause()"></video><div class="absolute bottom-10 left-4"><p class="font-bold">@${v.user_id||'user'}</p><p class="text-sm">${v.cap||''}</p></div><div class="absolute bottom-10 right-4"><button onclick="likeVideo('${v.id}',${v.likes||0})" class="text-3xl">❤️<div class="text-sm">${v.likes||0}</div></button></div>`;
+feed.appendChild(div);
+});
+}
+async function likeVideo(id,likes){await supabaseClient.from('videos').update({likes:likes+1}).eq('id',id);loadVideos();}
+document.getElementById('fileInput').addEventListener('change',async(e)=>{
+const file=e.target.files[0];if(!file)return;
+const cap=prompt('Caption:')||'';
+const fileName=Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9.]/g,'');
+const label=document.querySelector('label');label.textContent='Uploading...';
+const {error:upError}=await supabaseClient.storage.from('videos').upload(fileName,file);
+if(upError){alert(upError.message);label.textContent='+ Upload';return;}
+const {data:urlData}=supabaseClient.storage.from('videos').getPublicUrl(fileName);
+await supabaseClient.from('videos').insert({id:fileName,url:urlData.publicUrl,cap:cap,user_id:'aliyu',likes:0});
+alert('Uploaded! 🔥');label.textContent='+ Upload';loadVideos();
+});
+loadVideos();
+</script>
+</body>
+</html>
