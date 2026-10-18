@@ -1,50 +1,196 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Clipzy - TikTok Clone</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <title>Clipzy 🔥</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-black text-white">
-<div class="h-screen flex flex-col max-w-[500px] mx-auto">
-<header class="p-4 flex justify-between items-center border-b border-zinc-800">
-<h1 class="font-bold text-xl">Clipzy 🔥</h1>
-<label class="bg-white text-black px-4 py-2 rounded-full font-bold cursor-pointer">+ Upload<input id="fileInput" type="file" accept="video/*" hidden></label>
-</header>
-<div id="feed" class="flex-1 overflow-y-scroll snap-y snap-mandatory bg-black"><div class="h-full flex items-center justify-center text-zinc-500">Loading...</div></div>
-</div>
-<script>
-const SUPABASE_URL='https://gukuzlvwqaripnufvmlt.supabase.co';
-const SUPABASE_KEY='sb_publishable_x2ndSpPkpMsb3ajyBYBVrw_2y8K-84l';
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-async function loadVideos(){
-const {data,error}=await supabaseClient.from('videos').select('*').order('created_at',{ascending:false});
-const feed=document.getElementById('feed');
-if(error){feed.innerHTML='Error: '+error.message;return;}
-if(!data||data.length==0){feed.innerHTML='<div class="h-full flex items-center justify-center">No videos yet - Be first to upload!</div>';return;}
-feed.innerHTML='';
-data.forEach(v=>{
-const div=document.createElement('div');
-div.className='h-[calc(100vh-64px)] w-full snap-start relative flex items-center justify-center bg-black';
-div.innerHTML=`<video src="${v.url}" class="h-full w-full object-contain" loop playsinline onclick="this.paused?this.play():this.pause()"></video><div class="absolute bottom-10 left-4"><p class="font-bold">@${v.user_id||'user'}</p><p class="text-sm">${v.cap||''}</p></div><div class="absolute bottom-10 right-4"><button onclick="likeVideo('${v.id}',${v.likes||0})" class="text-3xl">❤️<div class="text-sm">${v.likes||0}</div></button></div>`;
-feed.appendChild(div);
-});
-}
-async function likeVideo(id,likes){await supabaseClient.from('videos').update({likes:likes+1}).eq('id',id);loadVideos();}
-document.getElementById('fileInput').addEventListener('change',async(e)=>{
-const file=e.target.files[0];if(!file)return;
-const cap=prompt('Caption:')||'';
-const fileName=Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9.]/g,'');
-const label=document.querySelector('label');label.textContent='Uploading...';
-const {error:upError}=await supabaseClient.storage.from('videos').upload(fileName,file);
-if(upError){alert(upError.message);label.textContent='+ Upload';return;}
-const {data:urlData}=supabaseClient.storage.from('videos').getPublicUrl(fileName);
-await supabaseClient.from('videos').insert({id:fileName,url:urlData.publicUrl,cap:cap,user_id:'aliyu',likes:0});
-alert('Uploaded! 🔥');label.textContent='+ Upload';loadVideos();
-});
-loadVideos();
-</script>
+  <div class="h-screen flex flex-col max-w-[500px] mx-auto">
+    <header class="p-4 flex justify-between items-center border-b border-zinc-800">
+      <h1 class="font-bold text-xl">Clipzy 🔥</h1>
+      <label id="uploadLabel" class="bg-white text-black px-4 py-2 rounded-full font-bold cursor-pointer">
+        + Upload
+        <input id="fileInput" type="file" accept="video/*" hidden>
+      </label>
+    </header>
+
+    <p id="status" class="text-sm text-center text-zinc-400 p-2" role="status"></p>
+    <main id="feed" class="flex-1 overflow-y-auto snap-y snap-mandatory bg-black">
+      <div class="p-8 text-center text-zinc-400">Loading videos...</div>
+    </main>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://gukuzlvwqaripnufvmlt.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_x2ndSpPkpMsb3ajyBYBVrw_2y8K-84l';
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const feed = document.getElementById('feed');
+    const status = document.getElementById('status');
+    const fileInput = document.getElementById('fileInput');
+    const uploadLabel = document.getElementById('uploadLabel');
+
+    function showStatus(message) {
+      status.textContent = message;
+    }
+
+    async function loadVideos() {
+      feed.replaceChildren();
+
+      const loading = document.createElement('p');
+      loading.className = 'p-8 text-center text-zinc-400';
+      loading.textContent = 'Loading videos...';
+      feed.appendChild(loading);
+
+      const { data, error } = await supabaseClient
+        .from('videos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        feed.replaceChildren();
+        showStatus('Could not load videos: ' + error.message);
+        return;
+      }
+
+      feed.replaceChildren();
+
+      if (!data || data.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'p-8 text-center text-zinc-400';
+        empty.textContent = 'No videos yet. Be the first to upload!';
+        feed.appendChild(empty);
+        return;
+      }
+
+      showStatus('');
+
+      data.forEach((videoData) => {
+        const card = document.createElement('section');
+        card.className = 'h-[calc(100vh-110px)] w-full snap-start relative flex items-center justify-center bg-black';
+
+        const video = document.createElement('video');
+        video.src = videoData.url;
+        video.className = 'h-full w-full object-contain';
+        video.loop = true;
+        video.playsInline = true;
+        video.controls = true;
+        video.preload = 'metadata';
+
+        const info = document.createElement('div');
+        info.className = 'absolute bottom-10 left-4 right-20 pointer-events-none';
+
+        const username = document.createElement('p');
+        username.className = 'font-bold';
+        username.textContent = '@' + (videoData.user_id || 'user');
+
+        const caption = document.createElement('p');
+        caption.className = 'text-sm whitespace-pre-wrap';
+        caption.textContent = videoData.cap || '';
+
+        info.append(username, caption);
+
+        const likeButton = document.createElement('button');
+        likeButton.className = 'absolute bottom-10 right-4 text-2xl';
+        likeButton.type = 'button';
+
+        const heart = document.createElement('span');
+        heart.textContent = '❤️';
+
+        const count = document.createElement('span');
+        count.className = 'block text-sm text-center';
+        count.textContent = String(videoData.likes || 0);
+
+        likeButton.append(heart, count);
+        likeButton.addEventListener('click', async () => {
+          likeButton.disabled = true;
+
+          const newLikes = Number(videoData.likes || 0) + 1;
+          const { error: likeError } = await supabaseClient
+            .from('videos')
+            .update({ likes: newLikes })
+            .eq('id', videoData.id);
+
+          if (likeError) {
+            showStatus('Could not like video: ' + likeError.message);
+          } else {
+            videoData.likes = newLikes;
+            count.textContent = String(newLikes);
+          }
+
+          likeButton.disabled = false;
+        });
+
+        card.append(video, info, likeButton);
+        feed.appendChild(card);
+      });
+    }
+
+    fileInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('video/')) {
+        showStatus('Please select a video file.');
+        fileInput.value = '';
+        return;
+      }
+
+      const caption = prompt('Caption:') || '';
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const fileName = Date.now() + '-' + safeName;
+
+      uploadLabel.classList.add('opacity-50');
+      fileInput.disabled = true;
+      showStatus('Uploading video...');
+
+      try {
+        const { error: uploadError } = await supabaseClient
+          .storage.from('videos')
+          .upload(fileName, file, { contentType: file.type });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabaseClient
+          .storage.from('videos')
+          .getPublicUrl(fileName);
+
+        const { error: insertError } = await supabaseClient
+          .from('videos')
+          .insert({
+            id: crypto.randomUUID(),
+            url: urlData.publicUrl,
+            cap: caption,
+            user_id: 'aliyu',
+            likes: 0
+          });
+
+        if (insertError) {
+          showStatus('Video uploaded, but saving its details failed: ' + insertError.message);
+          return;
+        }
+
+        showStatus('Video uploaded successfully! 🔥');
+        await loadVideos();
+      } catch (error) {
+        showStatus('Upload failed: ' + (error.message || 'Unknown error'));
+      } finally {
+        uploadLabel.classList.remove('opacity-50');
+        fileInput.disabled = false;
+        fileInput.value = '';
+      }
+    });
+
+    loadVideos();
+  </script>
 </body>
 </html>
